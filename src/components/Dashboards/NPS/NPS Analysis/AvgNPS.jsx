@@ -33,7 +33,7 @@ const AvgNPS = () => {
   const npsGraphNames = [
     {
       id: 1,
-      name: "NPS Score",
+      name: "Overall",
     },
     {
       id: 2,
@@ -50,7 +50,7 @@ const AvgNPS = () => {
   ];
 
   const [filterStatus, setFilterStatus] = useState(false);
-  const [graphName, setGraphName] = useState("NPS Score");
+  const [graphName, setGraphName] = useState("Overall");
   const [apiData, setApiData] = useState();
   const [avgNPS, setAvgNPS] = useRecoilState(AvgNPSAtom);
   const [spinAnimation, setSpinAnimation] = useState(false);
@@ -221,10 +221,22 @@ const AvgNPS = () => {
             </div>
           </div>
 
-          <div className="flex justify-end items-center gap-[4px] ">
+          <div className="flex items-center gap-5 justify-end my-5">
+            <div className="flex items-center gap-1">
+              <div className="bg-[#00AC69] h-[8px] w-[8px] rounded-full"></div>
+              <div className="text-[12px] opacity-80">Promoters</div>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="bg-[#939799] h-[8px] w-[8px] rounded-full"></div>
+              <div className="text-[12px] opacity-80">Passives</div>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="bg-[#DB2B39] h-[8px] w-[8px] rounded-full"></div>
+              <div className="text-[12px] opacity-80">Detractors</div>
+            </div>
             <div className="flex items-center gap-1">
               <div className="bg-[#0094E0] h-[8px] w-[8px] rounded-full"></div>
-              <div className="text-[12px] opacity-80">Average NPS</div>
+              <div className="text-[12px] opacity-80">Overall</div>
             </div>
           </div>
 
@@ -261,14 +273,43 @@ const AvgNPS = () => {
                 />
 
                 <Tooltip cursor={false} content={<CustomTooltip />} />
+                {npsScore && (
+                  <Bar
+                    barSize={20}
+                    name="Overall"
+                    dataKey="NPS"
+                    fill="#0094E0"
+                    radius={[5, 5, 0, 0]}
+                  />
+                )}
+                {promoters && (
+                  <Bar
+                    barSize={20}
+                    name="Promoters"
+                    dataKey="promoter"
+                    fill="#00AC69"
+                    radius={[5, 5, 0, 0]}
+                  />
+                )}
 
-                <Bar
-                  barSize={20}
-                  name="Average NPS"
-                  dataKey="NPS"
-                  fill="#0094E0"
-                  radius={[5, 5, 0, 0]}
-                />
+                {passives && (
+                  <Bar
+                    barSize={20}
+                    name="Passives"
+                    dataKey="passive"
+                    fill="#939799"
+                    radius={[5, 5, 0, 0]}
+                  />
+                )}
+                {detractors && (
+                  <Bar
+                    barSize={20}
+                    name="Detractors"
+                    dataKey="detractor"
+                    fill="#DB2B39"
+                    radius={[5, 5, 0, 0]}
+                  />
+                )}
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -291,7 +332,7 @@ function CustomTooltip({ active, payload, label }) {
           <div key={Math.random()} className="">
             <div className="flex justify-start items-center ">
               <div
-                style={{ background: "#0094E0" }}
+                style={{ background: data?.color }}
                 className={`h-[5px] w-[5px] rounded-full mr-2 `}
               ></div>
               <div className="flex justify-between items-center  w-full">

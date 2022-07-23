@@ -688,6 +688,7 @@ const NPSDashboard = () => {
         }
       );
       setTimeout(() => {
+        console.log("===========================", avgNps?.data);
         setAvgNPS(avgNps?.data);
         setAllDataRecievedStatus(true);
       });

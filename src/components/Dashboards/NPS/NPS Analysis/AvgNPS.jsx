@@ -25,10 +25,40 @@ import sentimentOverTimeApiData from "../../../../recoil/atoms/sentimentOverTime
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import { exportComponentAsPNG } from "react-component-export-image";
 import AvgNPSAtom from "../../../../recoil/atoms/AvgNPSAtom";
+import chevron from "../../../../assets/img/global-img/DownChevron.svg";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import { useDetectClickOutside } from "react-detect-click-outside";
 
 const AvgNPS = () => {
+  const npsGraphNames = [
+    {
+      id: 1,
+      name: "NPS Score",
+    },
+    {
+      id: 2,
+      name: "Promoters",
+    },
+    {
+      id: 3,
+      name: "Passives",
+    },
+    {
+      id: 4,
+      name: "Detractors",
+    },
+  ];
+
+  const [filterStatus, setFilterStatus] = useState(false);
+  const [graphName, setGraphName] = useState("NPS Score");
   const [apiData, setApiData] = useState();
   const [avgNPS, setAvgNPS] = useRecoilState(AvgNPSAtom);
+  const [spinAnimation, setSpinAnimation] = useState(false);
+
+  const [promoters, setPromoters] = useState(false);
+  const [passives, setPassives] = useState(false);
+  const [detractors, setDetractors] = useState(false);
+  const [npsScore, setNpsScore] = useState(true);
 
   const [nssOverTimeAPIData, setNssOverTimeAPIData] = useRecoilState(
     sentimentOverTimeApiData
@@ -39,6 +69,21 @@ const AvgNPS = () => {
   }, [avgNPS]);
 
   const AvgNPSGraphComponent = useRef();
+
+  const closeToggle = () => {
+    setFilterStatus(false);
+  };
+  const ref = useDetectClickOutside({ onTriggered: closeToggle });
+
+  function handleReset() {
+    setFilterStatus(false);
+    setPromoters(false);
+    setPassives(false);
+    setDetractors(false);
+    setNpsScore(true);
+    setSpinAnimation(true);
+    setTimeout(() => setSpinAnimation(false), 1000);
+  }
 
   return (
     <div
@@ -55,12 +100,125 @@ const AvgNPS = () => {
         <div className="w-full">
           <div className="flex justify-between items-center mb-2">
             <h1 className=" font-bold opacity-80 text-[18px] ">Average NPS</h1>
-            <button onClick={() => exportComponentAsPNG(AvgNPSGraphComponent)}>
-              <FileDownloadOutlinedIcon
-                fontSize="small"
-                className="text-gray-400"
-              />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => exportComponentAsPNG(AvgNPSGraphComponent)}
+              >
+                <FileDownloadOutlinedIcon
+                  fontSize="small"
+                  className="text-gray-400"
+                />
+              </button>
+              <div
+                className="relative flex flex-row-reverse gap-5 items-center"
+                ref={ref}
+              >
+                <div>
+                  <RefreshIcon
+                    fontSize="large"
+                    className={` ${
+                      spinAnimation ? "animate-spin" : ""
+                    } opacity-80 p-2 cursor-pointer active:scale-95   transition duration-75  hover:bg-gray-100 rounded-full`}
+                    onClick={handleReset}
+                  />
+                </div>
+                {/* Dropdown */}
+                <div
+                  className="bg-gray-100  bg-opacity-[100%] p-2 w-[120px] rounded-lg flex justify-between items-center cursor-pointer"
+                  onClick={() => setFilterStatus(!filterStatus)}
+                >
+                  <div className="text-[12px] opacity-70">Select Graph</div>
+                  <img
+                    src={chevron}
+                    alt="open options arrow"
+                    className={` ${
+                      filterStatus ? "rotate-180" : "rotate-0"
+                    } transition-all`}
+                  />
+                </div>
+
+                <div
+                  className={`bg-gray-100  z-[50] ${
+                    filterStatus ? "h-auto block" : "h-0 hidden"
+                  }   w-[120px] rounded-lg absolute top-[120%] left-[0%]`}
+                >
+                  {npsGraphNames?.map((data) => (
+                    <div
+                      key={data?.id}
+                      className={` flex justify-end flex-row-reverse items-center gap-5 p-2 border-b-2 border-b-transparent hover:bg-gray-100 text-[12px] opacity-70 cursor-pointer `}
+                      onClick={() => {
+                        // new logic
+                        if (promoters || passives || detractors || npsScore) {
+                          if (data.id === 1) {
+                            if (
+                              (promoters || passives || detractors) &&
+                              npsScore === true
+                            ) {
+                              setNpsScore(false);
+                            } else {
+                              setNpsScore(true);
+                            }
+                          } else if (data.id === 2) {
+                            if (
+                              (passives || detractors || npsScore) &&
+                              promoters === true
+                            ) {
+                              setPromoters(false);
+                            } else {
+                              setPromoters(true);
+                            }
+                          } else if (data.id === 3) {
+                            if (
+                              (promoters || detractors || npsScore) &&
+                              passives === true
+                            ) {
+                              setPassives(false);
+                            } else {
+                              setPassives(true);
+                            }
+                          } else if (data.id === 4) {
+                            if (
+                              (promoters || passives || npsScore) &&
+                              detractors === true
+                            ) {
+                              setDetractors(false);
+                            } else {
+                              setDetractors(true);
+                            }
+                          }
+                        }
+
+                        setGraphName(data?.name);
+                        console.log(data?.name);
+                      }}
+                    >
+                      <div>{data?.name}</div>
+                      <div
+                        className={`w-[11px] h-[11px] border border-black rounded-sm
+                      ${
+                        npsScore && data?.id === 1 ? "bg-[#0094E0]" : "bg-white"
+                      }
+                       ${
+                         promoters && data?.id === 2
+                           ? "bg-[#00AC69]"
+                           : "bg-white"
+                       }
+                      ${
+                        passives && data?.id === 3 ? "bg-[#939799]" : "bg-white"
+                      }
+                      ${
+                        detractors && data?.id === 4
+                          ? "bg-[#DB2B39]"
+                          : "bg-white"
+                      }
+                     
+                      `}
+                      ></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-end items-center gap-[4px] ">
